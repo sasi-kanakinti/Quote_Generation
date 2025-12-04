@@ -6,3 +6,5 @@ requests
 databricks-sql-connector
 PyJWT
 passlib[bcrypt]
+python-jose
+python-jose[cryptography]
