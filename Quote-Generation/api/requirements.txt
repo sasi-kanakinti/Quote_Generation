@@ -1,0 +1,7 @@
+fastapi
+mangum
+python-jose
+python-jose[cryptography]
+passlib[bcrypt]
+databricks-sql-connector
+requests
