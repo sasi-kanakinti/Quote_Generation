@@ -1,7 +1,10 @@
 fastapi
 mangum
+uvicorn
+python-dotenv
+requests
+databricks-sql-connector
+PyJWT
+passlib[bcrypt]
 python-jose
 python-jose[cryptography]
-passlib[bcrypt]
-databricks-sql-connector
-requests
