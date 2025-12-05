@@ -1,29 +1,33 @@
 // @ts-nocheck
 import React from "react";
 
-export default function QuoteCard({ quote, onCopy, onTweet, onSave, saved }) {
+export default function QuoteCard({ quote, saved, onCopy, onTweet, onSave }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow">
-      <blockquote className="text-2xl text-slate-800">
-        “{quote.content}”
-      </blockquote>
+    <div className="bg-white p-6 rounded-xl shadow mb-4">
+      <p className="text-xl font-semibold mb-2">“{quote.content}”</p>
+      <p className="text-gray-700 mb-4">— {quote.author}</p>
 
-      <div className="mt-4 flex justify-between">
-        <div className="text-sm text-slate-600">— {quote.author}</div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => onCopy(quote)}
+          className="px-3 py-2 bg-gray-200 rounded"
+        >
+          Copy
+        </button>
 
-        <div className="flex gap-2">
-          <button onClick={() => onCopy(quote)} className="px-3 py-1 border rounded text-sm">Copy</button>
-          <button onClick={() => onTweet(quote)} className="px-3 py-1 border rounded text-sm">Tweet</button>
+        <button
+          onClick={() => onTweet(quote)}
+          className="px-3 py-2 bg-blue-300 rounded"
+        >
+          Tweet
+        </button>
 
-          <button
-            onClick={() => onSave(quote)}
-            className={`px-3 py-1 rounded text-sm ${
-              saved ? "bg-yellow-400 text-black" : "border"
-            }`}
-          >
-            {saved ? "Unsave" : "Save"}
-          </button>
-        </div>
+        <button
+          onClick={() => onSave(quote)}
+          className="px-3 py-2 bg-yellow-300 rounded"
+        >
+          {saved ? "Unsave" : "Save"}
+        </button>
       </div>
     </div>
   );

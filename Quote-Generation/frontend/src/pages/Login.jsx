@@ -14,12 +14,11 @@ export default function Login() {
 
     try {
       const res = await axiosClient.post("/auth/login", form);
-      const token = res.data.access_token;
-
-      localStorage.setItem("access_token", token);
+      localStorage.setItem("access_token", res.data.access_token);
 
       navigate("/generator");
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.detail || "Login failed");
     }
   }
@@ -30,21 +29,21 @@ export default function Login() {
 
       {error && <p className="text-red-600 mb-3">{error}</p>}
 
-      <form className="space-y-3" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="email"
           placeholder="Email"
-          className="w-full px-3 py-2 border rounded"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="w-full px-3 py-2 border rounded"
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full px-3 py-2 border rounded"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className="w-full px-3 py-2 border rounded"
         />
 
         <button className="w-full bg-slate-800 text-white py-2 rounded">

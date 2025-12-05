@@ -8,58 +8,64 @@ export default function QuoteGenerator() {
   const [quote, setQuote] = useState(null);
   const [favorites, setFavorites] = useState([]);
 
-  // Fetch random quote
   async function fetchQuote() {
     try {
       const res = await axiosClient.get("/quotes/random");
-      const data = res.data;
-
-      setQuote({
-        id: data.id,
-        content: data.content,
-        author: data.author,
-        tags: data.tags,
-      });
-
+      setQuote(res.data);
     } catch (err) {
       console.error("Error fetching quote:", err);
     }
   }
 
-  // Fetch saved favorites from backend
   async function loadFavoritesFromBackend() {
     try {
       const token = localStorage.getItem("access_token");
       if (!token) return;
 
-      const res = await axiosClient.get("/quotes/saved", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setFavorites(res.data || []);
-
+      const res = await axiosClient.get("/quotes/saved");
+      setFavorites(res.data);
     } catch (err) {
-      console.error("Failed loading favorites:", err);
+      console.error("Failed to load favorites:", err);
     }
   }
 
-  // Initial load: quote + favorites
-  useEffect(() => {
-    async function init() {
-      await fetchQuote();
-      await loadFavoritesFromBackend();
+  async function saveQuote(q) {
+    try {
+      await axiosClient.post("/quotes/save", {
+        content: q.content,
+        author: q.author,
+      });
+
+      loadFavoritesFromBackend();
+    } catch (err) {
+      console.error("Save failed:", err);
     }
-    init();
+  }
+
+  async function removeQuote(q) {
+    try {
+      await axiosClient.delete(`/quotes/remove/${q.id}`);
+      loadFavoritesFromBackend();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchQuote();
+    loadFavoritesFromBackend();
   }, []);
 
-  // Copy text
+  function toggleFavorite(q) {
+    const exists = favorites.some((f) => f.content === q.content);
+    if (exists) removeQuote(q);
+    else saveQuote(q);
+  }
+
   function copy(q) {
     navigator.clipboard.writeText(`“${q.content}” — ${q.author}`);
   }
 
-  // Tweet quote
   function tweet(q) {
     const t = `${q.content} — ${q.author}`;
     window.open(
@@ -68,58 +74,8 @@ export default function QuoteGenerator() {
     );
   }
 
-  // Save favorite to backend
-  async function saveToBackend(q) {
-    try {
-      await axiosClient.post(
-        "/quotes/save",
-        {
-          content: q.content,
-          author: q.author,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-
-      // Refresh list
-      await loadFavoritesFromBackend();
-
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
-
-  // Remove favorite from backend
-  async function removeFromBackend(q) {
-    try {
-      await axiosClient.delete(`/quotes/remove/${q.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      });
-
-      await loadFavoritesFromBackend();
-
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  }
-
-  // Toggle favorite
-  function toggleFavorite(q) {
-    const exists = favorites.some((f) => f.content === q.content);
-
-    if (exists) {
-      removeFromBackend(q);
-    } else {
-      saveToBackend(q);
-    }
-  }
-
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      {/* Left side */}
       <div className="md:col-span-2">
         {quote && (
           <QuoteCard
@@ -139,12 +95,11 @@ export default function QuoteGenerator() {
         </button>
       </div>
 
-      {/* Favorites List */}
       <FavoriteList
         favorites={favorites}
         onCopy={copy}
         onTweet={tweet}
-        onRemove={(q) => removeFromBackend(q)}
+        onRemove={removeQuote}
       />
     </div>
   );

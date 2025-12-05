@@ -12,32 +12,38 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-xl font-semibold text-slate-800">
-          Quote Generator
-        </Link>
+    <nav className="flex justify-between items-center px-6 py-4 bg-white shadow">
+      <Link to="/" className="text-xl font-semibold">
+        Quote Generator
+      </Link>
 
-        <div className="flex gap-4 items-center">
-          {!token ? (
-            <>
-              <Link className="text-sm" to="/login">Login</Link>
-              <Link className="px-3 py-1 border rounded text-sm" to="/register">
-                Register
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link className="text-sm" to="/generator">Generator</Link>
-              <button
-                className="px-3 py-1 border rounded text-sm"
-                onClick={logout}
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </div>
+      <div className="flex gap-3">
+        {!token && (
+          <>
+            <Link
+              to="/login"
+              className="px-3 py-1 border rounded hover:bg-gray-100"
+            >
+              Login
+            </Link>
+
+            <Link
+              to="/register"
+              className="px-3 py-1 border rounded hover:bg-gray-100"
+            >
+              Register
+            </Link>
+          </>
+        )}
+
+        {token && (
+          <button
+            onClick={logout}
+            className="px-3 py-1 border rounded hover:bg-gray-100"
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );
