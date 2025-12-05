@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 
 import QuoteGenerator from "./pages/QuoteGenerator";
@@ -14,7 +15,7 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <>
       <Navbar />
 
       <div className="max-w-4xl mx-auto mt-10">
@@ -34,6 +35,6 @@ export default function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </>
   );
 }
