@@ -1,23 +1,26 @@
 // @ts-nocheck
 import React, { useState } from "react";
-import axiosClient from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
+import axiosClient from "../api/axiosClient";
 
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
     try {
       await axiosClient.post("/auth/register", form);
       navigate("/login");
     } catch (err) {
-      console.error("Register error:", err);
       setError(err.response?.data?.detail || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -27,7 +30,7 @@ export default function Register() {
 
       {error && <p className="text-red-600 mb-3">{error}</p>}
 
-      <form className="space-y-3" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-3">
         <input
           placeholder="Username"
           value={form.username}
@@ -51,8 +54,8 @@ export default function Register() {
           className="w-full px-3 py-2 border rounded"
         />
 
-        <button className="w-full bg-slate-800 text-white py-2 rounded">
-          Register
+        <button disabled={loading} className="w-full bg-slate-800 text-white py-2 rounded">
+          {loading ? "Registering..." : "Register"}
         </button>
       </form>
     </div>

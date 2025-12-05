@@ -1,55 +1,88 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
-import { useNavigate } from "react-router-dom";
+import QuoteCard from "../components/QuoteCard";
+import FavoriteList from "../components/FavoriteList";
 
-export default function Login() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState(null);
+export default function QuoteGenerator() {
+  const [quote, setQuote] = useState(null);
+  const [favorites, setFavorites] = useState([]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-
+  async function fetchQuote() {
     try {
-      const res = await axiosClient.post("/auth/login", form);
-      localStorage.setItem("access_token", res.data.access_token);
+      const res = await axiosClient.get("/quotes/random");
+      const data = res.data;
 
-      navigate("/generator");
+      setQuote({
+        id: data.id,
+        content: data.content,
+        author: data.author,
+        tags: data.tags,
+      });
     } catch (err) {
-      console.error("Login error:", err);
-      setError(err.response?.data?.detail || "Login failed");
+      console.error("Error fetching quote:", err);
+    }
+  }
+
+  async function loadFavoritesFromBackend() {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+
+      const res = await axiosClient.get("/quotes/saved");
+
+      setFavorites(res.data || []);
+    } catch (err) {
+      console.error("Failed loading favorites:", err);
+    }
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchQuote();
+    loadFavoritesFromBackend();
+  }, []);
+
+  async function saveToBackend(q) {
+    try {
+      await axiosClient.post("/quotes/save", {
+        quote: q.content,
+        author: q.author,
+      });
+
+      loadFavoritesFromBackend();
+    } catch (err) {
+      console.error("Save failed:", err);
     }
   }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
-      <h2 className="text-xl font-semibold mb-4">Login</h2>
+    <div className="grid gap-6 md:grid-cols-3">
+      <div className="md:col-span-2">
+        {quote && (
+          <QuoteCard
+            quote={quote}
+            onCopy={() => navigator.clipboard.writeText(`“${quote.content}” — ${quote.author}`)}
+            onTweet={() =>
+              window.open(
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  `${quote.content} — ${quote.author}`
+                )}`
+              )
+            }
+            onSave={() => saveToBackend(quote)}
+            saved={favorites.some((f) => f.quote === quote.content)}
+          />
+        )}
 
-      {error && <p className="text-red-600 mb-3">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full px-3 py-2 border rounded"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full px-3 py-2 border rounded"
-        />
-
-        <button className="w-full bg-slate-800 text-white py-2 rounded">
-          Login
+        <button
+          onClick={fetchQuote}
+          className="mt-4 px-3 py-2 bg-slate-800 text-white rounded"
+        >
+          New Quote
         </button>
-      </form>
+      </div>
+
+      <FavoriteList favorites={favorites} />
     </div>
   );
 }
